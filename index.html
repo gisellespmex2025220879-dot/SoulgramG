@@ -53,10 +53,9 @@ margin-top:15px;
 border-radius:6px;
 }
 
-.reactions span{
-font-size:20px;
-margin-right:8px;
-cursor:pointer;
+#error{
+color:red;
+margin-top:10px;
 }
 
 </style>
@@ -77,6 +76,8 @@ cursor:pointer;
 
 <button onclick="postReflection()">Post</button>
 
+<div id="error"></div>
+
 <div id="feed"></div>
 
 </div>
@@ -85,7 +86,7 @@ cursor:pointer;
 
 const supabaseUrl = "https://tsjijeklkzydjfbbrvtr.supabase.co"
 
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzamlqZWtsa3p5ZGpmYmJydnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5ODUxNzQsImV4cCI6MjA4ODU2MTE3NH0.jqeSC4CxDyBOxrpJCbPM-KqY78NbPPI0SjX06SJEOkM"
+const supabaseKey = "YOUR_ANON_KEY"
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
 
@@ -95,11 +96,18 @@ let text = document.getElementById("reflection").value
 
 if(!text) return
 
-await supabase
+const {error} = await supabase
 .from("Soulgram")
 .insert({
 content:text
 })
+
+if(error){
+
+document.getElementById("error").innerText = error.message
+return
+
+}
 
 document.getElementById("reflection").value=""
 
@@ -109,10 +117,17 @@ loadFeed()
 
 async function loadFeed(){
 
-const {data} = await supabase
+const {data,error} = await supabase
 .from("Soulgram")
 .select("*")
 .order("created_at",{ascending:false})
+
+if(error){
+
+document.getElementById("error").innerText = error.message
+return
+
+}
 
 let feed = document.getElementById("feed")
 
@@ -125,20 +140,6 @@ feed.innerHTML += `
 <div class="post">
 
 <p>${post.content}</p>
-
-<div class="reactions">
-
-<span>♥️</span>
-<span>🥰</span>
-<span>🤩</span>
-<span>😂</span>
-<span>😁</span>
-<span>😝</span>
-<span>🥲</span>
-<span>🥹</span>
-<span>😱</span>
-
-</div>
 
 </div>
 
