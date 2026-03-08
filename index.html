@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soulgram</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+margin:0;
+}
+
+header{
+background:#2d3e50;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+max-width:600px;
+margin:auto;
+}
+
+textarea{
+width:100%;
+height:80px;
+padding:10px;
+margin-bottom:10px;
+}
+
+button{
+background:#2d3e50;
+color:white;
+border:none;
+padding:10px 20px;
+cursor:pointer;
+}
+
+.post{
+background:white;
+padding:15px;
+margin-top:15px;
+border-radius:6px;
+}
+
+.reactions span{
+font-size:20px;
+margin-right:8px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>Soulgram ♥️</h1>
+</header>
+
+<div class="container">
+
+<textarea id="reflection" placeholder="Share a reflection..."></textarea>
+
+<button onclick="postReflection()">Post</button>
+
+<div id="feed"></div>
+
+</div>
+
+<script>
+
+const supabaseUrl = "https://tsjijeklkzydjfbbrvtr.supabase.co"
+
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzamlqZWtsa3p5ZGpmYmJydnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5ODUxNzQsImV4cCI6MjA4ODU2MTE3NH0.jqeSC4CxDyBOxrpJCbPM-KqY78NbPPI0SjX06SJEOkM"
+
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+async function postReflection(){
+
+let text = document.getElementById("reflection").value
+
+if(!text) return
+
+await supabase
+.from("Soulgram")
+.insert({
+content:text
+})
+
+document.getElementById("reflection").value=""
+
+loadFeed()
+
+}
+
+async function loadFeed(){
+
+const {data} = await supabase
+.from("Soulgram")
+.select("*")
+.order("created_at",{ascending:false})
+
+let feed = document.getElementById("feed")
+
+feed.innerHTML=""
+
+data.forEach(post=>{
+
+feed.innerHTML += `
+
+<div class="post">
+
+<p>${post.content}</p>
+
+<div class="reactions">
+
+<span>♥️</span>
+<span>🥰</span>
+<span>🤩</span>
+<span>😂</span>
+<span>😁</span>
+<span>😝</span>
+<span>🥲</span>
+<span>🥹</span>
+<span>😱</span>
+
+</div>
+
+</div>
+
+`
+
+})
+
+}
+
+loadFeed()
+
+</script>
+
+</body>
+</html>
