@@ -1,65 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Soulgram</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- Official browser build -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
-
 body{
-font-family:Arial;
-background:#f4f4f4;
-margin:0;
+  font-family: Arial;
+  background:#f4f4f4;
+  margin:0;
 }
 
 header{
-background:#2d3e50;
-color:white;
-padding:15px;
-text-align:center;
+  background:#2d3e50;
+  color:white;
+  padding:15px;
+  text-align:center;
 }
 
 .container{
-padding:20px;
-max-width:600px;
-margin:auto;
+  padding:20px;
+  max-width:600px;
+  margin:auto;
 }
 
 textarea{
-width:100%;
-height:80px;
-padding:10px;
-margin-bottom:10px;
+  width:100%;
+  height:80px;
+  padding:10px;
 }
 
 button{
-background:#2d3e50;
-color:white;
-border:none;
-padding:10px 20px;
-cursor:pointer;
+  margin-top:10px;
+  padding:10px 20px;
+  background:#2d3e50;
+  color:white;
+  border:none;
 }
 
 .post{
-background:white;
-padding:15px;
-margin-top:15px;
-border-radius:6px;
+  background:white;
+  padding:15px;
+  margin-top:15px;
+  border-radius:6px;
 }
 
-#error{
-color:red;
-margin-top:10px;
+#debug{
+  margin-top:10px;
+  color:red;
 }
-
 </style>
-
 </head>
 
 <body>
@@ -71,12 +65,10 @@ margin-top:10px;
 <div class="container">
 
 <textarea id="reflection" placeholder="Share a reflection..."></textarea>
+<br>
+<button id="postBtn">Post</button>
 
-<br><br>
-
-<button onclick="postReflection()">Post</button>
-
-<div id="error"></div>
+<div id="debug"></div>
 
 <div id="feed"></div>
 
@@ -84,72 +76,63 @@ margin-top:10px;
 
 <script>
 
-const supabaseUrl = "https://tsjijeklkzydjfbbrvtr.supabase.co"
+const supabaseUrl = "https://tsjijeklkzydjfbbrvtr.supabase.co";
+const supabaseKey = "PASTE_YOUR_ANON_KEY_HERE";
 
-const supabaseKey = "YOUR_ANON_KEY"
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+const debug = document.getElementById("debug");
+const feed = document.getElementById("feed");
+
+document.getElementById("postBtn").addEventListener("click", postReflection);
 
 async function postReflection(){
 
-let text = document.getElementById("reflection").value
+  const text = document.getElementById("reflection").value;
 
-if(!text) return
+  debug.innerText = "Posting...";
 
-const {error} = await supabase
-.from("Soulgram")
-.insert({
-content:text
-})
+  const { data, error } = await supabase
+    .from("Soulgram")
+    .insert({ content: text });
 
-if(error){
+  if(error){
+    debug.innerText = "Error: " + error.message;
+    return;
+  }
 
-document.getElementById("error").innerText = error.message
-return
+  debug.innerText = "Posted successfully";
 
-}
+  document.getElementById("reflection").value = "";
 
-document.getElementById("reflection").value=""
-
-loadFeed()
-
+  loadFeed();
 }
 
 async function loadFeed(){
 
-const {data,error} = await supabase
-.from("Soulgram")
-.select("*")
-.order("created_at",{ascending:false})
+  const { data, error } = await supabase
+    .from("Soulgram")
+    .select("*")
+    .order("created_at",{ascending:false});
 
-if(error){
+  if(error){
+    debug.innerText = "Load error: " + error.message;
+    return;
+  }
 
-document.getElementById("error").innerText = error.message
-return
+  feed.innerHTML="";
 
-}
-
-let feed = document.getElementById("feed")
-
-feed.innerHTML=""
-
-data.forEach(post=>{
-
-feed.innerHTML += `
-
-<div class="post">
-
-<p>${post.content}</p>
-
-</div>
-
-`
-
-})
+  data.forEach(post=>{
+    feed.innerHTML += `
+      <div class="post">
+        <p>${post.content}</p>
+      </div>
+    `;
+  });
 
 }
 
-loadFeed()
+loadFeed();
 
 </script>
 
